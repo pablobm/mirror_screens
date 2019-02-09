@@ -1,4 +1,11 @@
 #!/usr/bin/env python
+"""
+A Python script to get secondary screens mirroring the primary.
+
+This script uses the `xrandr` tool to figure out what secondary
+screens are available, and then maps them (using scaling) over the
+portion of X11's virtual screen covered by the primary.
+"""
 import re
 import subprocess
 
