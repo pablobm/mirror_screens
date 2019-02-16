@@ -15,22 +15,41 @@ class DisplayInfo:
 
     @property
     def primary(self):
+        return self._find_screen_with_primary_marker() or self._find_first_screen_with_current_mode_marker()
+
+    def _find_screen_with_primary_marker(self):
         try:
-            return next(d for d in self.displays if d.is_primary)
+            return next(d for d in self.displays if d.marked_primary)
         except StopIteration:
             # No screeen marked as primary
             None
 
+    def _find_first_screen_with_current_mode_marker(self):
+        try:
+            return next(d for d in self.displays if d.current_mode)
+        except StopIteration:
+            # No screeen with a mode marked as current
+            None
+
     @property
     def secondaries(self):
-        return [d for d in self.displays if not d.is_primary]
+        primary = self.primary
+        return [d for d in self.displays if d != primary]
 
 
 class Display:
     def __init__(self):
         self.name = None
-        self.is_primary = False
+        self.marked_primary = False
         self.modes = []
+
+    @property
+    def current_mode(self):
+        try:
+            return next(d for d in self.modes if d.marked_current)
+        except StopIteration:
+            # No screeen with a mode marked as current
+            None
 
     @property
     def max_mode(self):
@@ -44,17 +63,24 @@ class Display:
 
 
 class Mode:
-    def __init__(self, w, h):
+    def __init__(self, w, h, marked_current=False):
         self.w = w
         self.h = h
+        self.marked_current = marked_current
 
     def correction_for(self, other):
-        print self
-        print other
         return CorrectionFactor(float(self.w) / other.w, float(self.h) / other.h)
 
     def __str__(self):
         return '%sx%s' % (self.w, self.h)
+
+    def __repr__(self):
+        attrs = [repr(self.w), repr(self.h)]
+        if self.marked_current:
+            attrs.append("marked_current=True")
+
+        _attrs = ", ".join(attrs)
+        return "%s(%s)" % (self.__class__.__name__, _attrs)
 
 
 class CorrectionFactor:
@@ -70,31 +96,32 @@ def run(line):
     proc = subprocess.Popen(line.split(" "), stdout=subprocess.PIPE)
     return proc.communicate()[0]
 
-displays = []
-result = run('xrandr')
-for line in result.decode('utf8').splitlines():
-    m = re.search(r'^(\S+) connected (primary)?', line)
-    if m:
-        display = Display()
-        display.name = m.group(1)
-        display.is_primary = bool(m.group(2))
-        displays.append(display)
-    else:
-        m = re.search(r'^\s+(\d+)x(\d+) ', line)
+def raw_read_current_displays():
+    return run('xrandr').decode('utf8')
+
+def parse(input_str):
+    displays = []
+    for line in input_str.splitlines():
+        m = re.search(r'^(\S+) connected (primary)?', line)
         if m:
-            mode = Mode(int(m.group(1)), int(m.group(2)))
-            display.modes.append(mode)
+            display = Display()
+            display.name = m.group(1)
+            display.marked_primary = bool(m.group(2))
+            displays.append(display)
+        else:
+            m = re.search(r'^\s+(\d+)x(\d+)([* ])[+ ]', line)
+            if m:
+                width = int(m.group(1))
+                height = int(m.group(2))
+                marked_current = bool(m.group(3))
+                mode = Mode(width, height, marked_current=marked_current)
+                display.modes.append(mode)
 
-dinfo = DisplayInfo(displays)
+    return DisplayInfo(displays)
+
+raw_data = raw_read_current_displays()
+dinfo = parse(raw_data)
 primary = dinfo.primary
-if not primary:
-    try:
-        heuristic_primary = next(d for d in dinfo.displays if d.name == 'LVDS1')
-    except StopIteration:
-        raise Exception
-    primary = heuristic_primary
-    primary.is_primary = True
-
 pmode = primary.max_mode
 
 run('xrandr --output %s --mode %s --pos 0x0' % (primary.name, pmode))
