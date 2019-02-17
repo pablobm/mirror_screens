@@ -22,10 +22,10 @@ def raw_read_current_displays():
 raw_data = raw_read_current_displays()
 dinfo = parser.parse(raw_data)
 primary = dinfo.primary
-pmode = primary.max_mode
+pmode = primary.preferred_mode
 
 run('xrandr --output %s --mode %s --pos 0x0' % (primary.name, pmode))
 for d in dinfo.secondaries:
-    smode = d.max_mode
+    smode = d.preferred_mode
     correction = pmode.correction_for(smode)
     run('xrandr --output %s --pos 0x0 --mode %s --scale %s' % (d.name, smode, correction))

@@ -41,21 +41,16 @@ class Display:
             None
 
     @property
-    def max_mode(self):
-        best = None
-        max_prod = 0
-        for m in self.modes:
-            if max_prod < m.w * m.h:
-                best = m
-                max_prod = m.w * m.h
-        return best
+    def preferred_mode(self):
+        return next(m for m in self.modes if m.marked_preferred)
 
 
 class Mode:
-    def __init__(self, w, h, marked_current=False):
+    def __init__(self, w, h, marked_current=False, marked_preferred=False):
         self.w = w
         self.h = h
         self.marked_current = marked_current
+        self.marked_preferred = marked_preferred
 
     def correction_for(self, other):
         return CorrectionFactor(float(self.w) / other.w, float(self.h) / other.h)
@@ -64,9 +59,11 @@ class Mode:
         return '%sx%s' % (self.w, self.h)
 
     def __repr__(self):
-        attrs = [repr(self.w), repr(self.h)]
-        if self.marked_current:
-            attrs.append("marked_current=True")
+        args = [repr(self.w), repr(self.h)]
+        named_attrs = ["marked_current", "marked_preferred"]
+        for name in named_attrs:
+            value = getattr(self, name)
+            args.append("%s=%s", name, repr(value))
 
         _attrs = ", ".join(attrs)
         return "%s(%s)" % (self.__class__.__name__, _attrs)

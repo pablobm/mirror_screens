@@ -26,10 +26,11 @@ def parse_display_line(line):
         return display
 
 def parse_mode_line(line):
-    m = re.search(r'^\s+(\d+)x(\d+)\s+[0-9\.]+([* ])[+ ]', line)
+    m = re.search(r'^\s+(\d+)x(\d+)\s+[0-9\.]+([* ])([+ ])', line)
     if m:
         width = int(m.group(1))
         height = int(m.group(2))
         marked_current = m.group(3) == "*"
-        mode = Mode(width, height, marked_current=marked_current)
+        marked_preferred = m.group(4) == "+"
+        mode = Mode(width, height, marked_current=marked_current, marked_preferred=marked_preferred)
         return mode

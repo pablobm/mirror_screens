@@ -9,8 +9,8 @@ class ParseTest(unittest.TestCase):
         dinfo = parser.parse(xrandr_output)
         primary = dinfo.primary
         self.assertTrue(primary)
-        self.assertEqual(primary.max_mode.w, 1280)
-        self.assertEqual(primary.max_mode.h, 800)
+        self.assertEqual(primary.preferred_mode.w, 1280)
+        self.assertEqual(primary.preferred_mode.h, 800)
 
         others = dinfo.secondaries
         self.assertEqual(len(others), 1)
@@ -20,8 +20,8 @@ class ParseTest(unittest.TestCase):
         dinfo = parser.parse(xrandr_output)
         primary = dinfo.primary
         self.assertTrue(primary)
-        self.assertEqual(primary.max_mode.w, 1440)
-        self.assertEqual(primary.max_mode.h, 900)
+        self.assertEqual(primary.preferred_mode.w, 1440)
+        self.assertEqual(primary.preferred_mode.h, 900)
 
         others = dinfo.secondaries
         self.assertEqual(len(others), 1)
@@ -33,6 +33,7 @@ class ParseDisplayLineTest(unittest.TestCase):
         self.assertTrue(display)
         self.assertEqual(display.name, "LVDS1")
         self.assertTrue(display.marked_primary)
+
     def test_without_primary_marker(self):
         line = "eDP-1 connected 1440x900+0+0 (normal left inverted right x axis y axis) 303mm x 190mm"
         display = parser.parse_display_line(line)
