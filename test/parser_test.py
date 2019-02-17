@@ -1,12 +1,12 @@
 import unittest
 
 import support
-from mirror_screens import parse
+import parser
 
-class TestParser(unittest.TestCase):
-    def test_parse_with_labelled_primary(self):
+class ParseTest(unittest.TestCase):
+    def test_with_labelled_primary(self):
         xrandr_output = support.fixture("small-dell.double.xrandr")
-        dinfo = parse(xrandr_output)
+        dinfo = parser.parse(xrandr_output)
         primary = dinfo.primary
         self.assertTrue(primary)
         self.assertEqual(primary.max_mode.w, 1280)
@@ -15,9 +15,9 @@ class TestParser(unittest.TestCase):
         others = dinfo.secondaries
         self.assertEqual(len(others), 1)
 
-    def test_parse_without_labelled_primary(self):
+    def test_without_labelled_primary(self):
         xrandr_output = support.fixture("dell-latitude.double.xrandr")
-        dinfo = parse(xrandr_output)
+        dinfo = parser.parse(xrandr_output)
         primary = dinfo.primary
         self.assertTrue(primary)
         self.assertEqual(primary.max_mode.w, 1440)
