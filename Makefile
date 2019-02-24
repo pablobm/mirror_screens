@@ -1,4 +1,4 @@
 .PHONY: test
 
 test:
-	PYTHONPATH=. python test/*_test.py
+	PYTHONPATH=. python -m unittest discover -s test/ -p '*_test.py'

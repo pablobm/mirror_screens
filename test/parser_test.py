@@ -73,6 +73,3 @@ class ParseModeLineTest(unittest.TestCase):
         self.assertEqual(mode.w, 800)
         self.assertEqual(mode.h, 600)
         self.assertFalse(mode.marked_current)
-
-if __name__ == "__main__":
-    unittest.main()
