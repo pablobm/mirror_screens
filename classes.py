@@ -53,8 +53,10 @@ class Mode:
         self.marked_preferred = marked_preferred
 
     def correction_for(self, other):
-        ratio = max([float(self.w) / other.w, float(self.h) / other.h])
-        return CorrectionFactor(ratio, ratio)
+        return CorrectionFactor(
+            float(self.w) / other.w,
+            float(self.h) / other.h,
+        )
 
     def __str__(self):
         return '%sx%s' % (self.w, self.h)
